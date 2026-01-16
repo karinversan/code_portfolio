@@ -1,0 +1,62 @@
+---
+title: "Contextual Ranker for Marketplace Recommendations"
+summary: "Built a fast candidate→rank pipeline with robust evaluation + rollout guardrails for a high-traffic marketplace."
+tags: ["RecSys", "MLOps"]
+stack: ["PyTorch", "Faiss", "Feature Store", "Kafka", "Kubernetes", "Postgres"]
+metrics: ["CTR +6.4%", "P95 latency 55ms", "Cost −18% (GPU→CPU)" ]
+role: "Lead ML Engineer"
+year: 2025
+links:
+  github: "https://github.com/your-handle/contextual-ranker"
+  demo: "https://example.com/demo"
+  article: "https://example.com/writeup"
+featured: true
+slug: "contextual-ranker"
+---
+
+## Problem / context
+
+A marketplace homepage needed recommendations that were **personalized**, **fresh**, and **fast**. The prior system was a single-stage ranker that struggled with cold-start items and peaked in offline metrics but regressed online due to feature drift.
+
+Constraints:
+
+- **P95 latency:** < 60ms per request (rank step)
+- **Traffic:** large enough that GPU inference was cost-prohibitive
+- **Observability:** online KPIs required slice monitoring (new users/items, long-tail categories)
+
+## Approach / pipeline
+
+I shipped a two-stage architecture with strong data contracts:
+
+```text
+[Events] -> [Feature Store] -> [Candidate Gen (Two-Tower)] -> [ANN Search]
+                                          |                   |
+                                          v                   v
+                                 [Re-ranker (LightGBM)] -> [Business Rules] -> [Serve]
+```
+
+Key ideas:
+
+- **Candidate generation** optimized for recall and freshness (fast ANN).
+- **Re-ranker** optimized for calibrated click probability with strict feature parity.
+- **Evaluation** emphasized *agreement between offline + online* via counterfactual checks.
+
+## Data
+
+- Implicit feedback (clicks, saves) with debiasing heuristics.
+- Time-decayed popularity features to support new items.
+- Strict feature contracts: every feature had an owner, unit tests, and backfill strategy.
+
+> Note: data specifics are intentionally generalized.
+
+## Results
+
+- **CTR +6.4%** on the primary surface (A/B test, 2 weeks)
+- **P95 latency 55ms** end-to-end for ranking
+- **Cost −18%** by moving inference to optimized CPU + batching
+
+## What I would do next
+
+- Add an exploration policy to reduce feedback loops.
+- Incorporate better uncertainty estimates for cold-start users.
+

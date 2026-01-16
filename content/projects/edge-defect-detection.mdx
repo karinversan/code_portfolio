@@ -1,0 +1,63 @@
+---
+title: "Edge Vision Defect Detection"
+summary: "Built a compact CV model + on-device pipeline for real-time quality inspection with strict latency budgets."
+tags: ["CV", "MLOps"]
+stack: ["PyTorch", "ONNX Runtime", "TensorRT", "Kubernetes", "Prometheus"]
+metrics: ["Recall 0.92@0.10 FPR", "Latency 45ms (device)", "Scrap rate −9%" ]
+role: "ML Engineer"
+year: 2023
+links:
+  github: "https://github.com/your-handle/edge-defect"
+featured: false
+slug: "edge-defect-detection"
+---
+
+## Problem / context
+
+A manufacturing line needed automated inspection for visual defects. The tricky part: **variable lighting**, **rare defects**, and **a hard on-device latency budget**.
+
+Targets:
+
+- End-to-end latency < 60ms
+- High recall at low false positive rate (operators hate spam)
+- Simple deployment + monitoring
+
+## Approach / pipeline
+
+I built a compact detector + post-processing that’s resilient to lighting drift.
+
+- Model: lightweight backbone with focal loss + strong augmentation
+- Post-processing: per-station calibration thresholds
+- Deployment: ONNX Runtime / TensorRT on edge devices with a small watchdog service
+
+```text
+[Camera] -> [Preprocess] -> [Model] -> [Calibrated Threshold] -> [Defect Event]
+                                              |
+                                              v
+                                      [Metrics + Traces]
+```
+
+## Data
+
+- Curated a balanced training set with active learning
+- Added *hard negatives* from near-miss samples
+- Tracked dataset versions as immutable artifacts
+
+## Results
+
+- **Recall 0.92 @ 0.10 FPR** on a held-out validation set
+- **Latency 45ms** per frame on target hardware
+- **Scrap rate −9%** after rollout and operator feedback loop
+
+## Monitoring
+
+The edge service emits a small, high-signal set of metrics:
+
+- drift proxy: embedding distance
+- quality: alert rate, operator override rate
+- performance: per-stage latency histograms
+
+## What I’d improve
+
+- Expand synthetic augmentation for rare defect shapes
+- Add continuous calibration checks per station

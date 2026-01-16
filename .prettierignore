@@ -1,0 +1,5 @@
+.next
+node_modules
+public/rss.xml
+public/sitemap*.xml
+public/robots.txt

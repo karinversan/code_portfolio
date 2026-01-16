@@ -1,0 +1,67 @@
+---
+title: "LLM-Assisted Support Ticket Triage"
+summary: "Designed a safe NLP pipeline to route support tickets with high precision, while keeping humans in control."
+tags: ["NLP", "Research", "MLOps"]
+stack: ["Transformers", "RAG", "FastAPI", "Postgres", "Docker", "OpenTelemetry"]
+metrics: ["Macro-F1 +12%", "First-response time −38%", "Hallucination rate <0.5% (audited)" ]
+role: "ML Engineer"
+year: 2024
+links:
+  github: "https://github.com/your-handle/ticket-triage"
+  article: "https://example.com/triage-notes"
+featured: true
+slug: "llm-ticket-triage"
+---
+
+## Problem / context
+
+The support team handled a high volume of tickets with inconsistent labels and frequent edge cases. The goal was to **route tickets to the right queue** and **extract key entities** (product, plan, error codes) without creating a "black box".
+
+Requirements:
+
+- High precision on critical queues (billing/security)
+- Clear audit trail (why a ticket was routed)
+- Human override and continuous learning loop
+
+## Approach / pipeline
+
+I shipped a hybrid approach:
+
+1. **Fast classifier** (distilled transformer) to route common categories.
+2. **Retrieval-augmented extraction** for structured fields using curated internal docs.
+3. **Safety layer**: rules + confidence gating + mandatory citations for extracted fields.
+
+```text
+[Ticket] -> [Classifier] -> (high confidence) -> [Route]
+        \-> (low confidence)  -> [RAG Extract] -> [Gated Route + Evidence]
+```
+
+## Data
+
+- Historical tickets with noisy labels
+- A small gold set built with support leads to calibrate quality
+- Synthetic edge cases (templated) to stress-test failure modes
+
+## Results
+
+- **Macro-F1 +12%** after label cleanup + calibration
+- **First-response time −38%** by reducing manual routing
+- **Hallucination rate <0.5%** (audited sample) via citation + gating
+
+## Implementation notes
+
+A lightweight confidence gate:
+
+```python
+def route(pred_label: str, p: float, critical: set[str]) -> str:
+    if pred_label in critical and p < 0.92:
+        return "needs-human"
+    if p < 0.80:
+        return "needs-human"
+    return pred_label
+```
+
+## Lessons learned
+
+- Don’t over-index on aggregate accuracy—**slice metrics** catch the real risks.
+- RAG is best when your docs are tidy and **ownership is clear**.
