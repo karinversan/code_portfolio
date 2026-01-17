@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Karin Ndzi — Blog</title>
+        <link>https://example.com</link>
+        <description>Notes on ML engineering, evaluation, and production systems.</description>
+        <lastBuildDate>Fri, 16 Jan 2026 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>Next.js + feed</generator>
+        <language>en</language>
+        <image>
+            <title>Karin Ndzi — Blog</title>
+            <url>https://example.com/api/og?title=Karin%20Ndzi&amp;subtitle=Blog</url>
+            <link>https://example.com</link>
+        </image>
+        <copyright>All rights reserved 2026, Karin Ndzi</copyright>
+        <item>
+            <title><![CDATA[My Seco Post]]></title>
+            <link>https://example.com/blog/booo</link>
+            <guid>https://example.com/blog/booo</guid>
+            <pubDate>Fri, 16 Jan 2026 00:00:00 GMT</pubDate>
+            <description><![CDATA[Short summary that appears in the blog list and RSS.]]></description>
+            <category>Python</category>
+            <category>Statistics</category>
+        </item>
+        <item>
+            <title><![CDATA[My First Post]]></title>
+            <link>https://example.com/blog/hello</link>
+            <guid>https://example.com/blog/hello</guid>
+            <pubDate>Thu, 15 Jan 2026 00:00:00 GMT</pubDate>
+            <description><![CDATA[Short summary that appears in the blog list and RSS.]]></description>
+            <category>MLOps</category>
+            <category>Inference</category>
+        </item>
+    </channel>
+</rss>

@@ -3,7 +3,7 @@ title: "LLM-Assisted Support Ticket Triage"
 summary: "Designed a safe NLP pipeline to route support tickets with high precision, while keeping humans in control."
 tags: ["NLP", "Research", "MLOps"]
 stack: ["Transformers", "RAG", "FastAPI", "Postgres", "Docker", "OpenTelemetry"]
-metrics: ["Macro-F1 +12%", "First-response time −38%", "Hallucination rate <0.5% (audited)" ]
+metrics: ["Macro-F1 +12%", "First-response time −38%", "Hallucination rate &lt;0.5% (audited)" ]
 role: "ML Engineer"
 year: 2024
 links:
@@ -46,7 +46,7 @@ I shipped a hybrid approach:
 
 - **Macro-F1 +12%** after label cleanup + calibration
 - **First-response time −38%** by reducing manual routing
-- **Hallucination rate <0.5%** (audited sample) via citation + gating
+- **Hallucination rate &lt;0.5%** (audited sample) via citation + gating
 
 ## Implementation notes
 
@@ -54,9 +54,9 @@ A lightweight confidence gate:
 
 ```python
 def route(pred_label: str, p: float, critical: set[str]) -> str:
-    if pred_label in critical and p < 0.92:
+    if pred_label in critical and p &lt; 0.92:
         return "needs-human"
-    if p < 0.80:
+    if p &lt; 0.80:
         return "needs-human"
     return pred_label
 ```
