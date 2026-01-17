@@ -7,38 +7,54 @@ import { Container } from '@/components/ui/Container'
 import { PixelLabel } from '@/components/ui/PixelLabel'
 import { Divider } from '@/components/ui/Divider'
 import { getAllPosts } from '@/lib/content'
-import { site } from '@/lib/site'
+import { getDictionary, localizePath } from '@/lib/i18n'
+import { getLocale } from '@/lib/i18n.server'
+import { absoluteUrl } from '@/lib/utils'
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Notes on ML engineering: evaluation, LLM systems, and shipping models to production.',
-  alternates: { canonical: `${site.url}/blog` },
+export const dynamic = 'force-dynamic'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = getLocale()
+  const dict = getDictionary(locale)
+  return {
+    title: dict.blog.metadata.title,
+    description: dict.blog.metadata.description,
+    alternates: {
+      canonical: absoluteUrl(localizePath('/blog', locale)),
+      languages: {
+        en: absoluteUrl(localizePath('/blog', 'en')),
+        ru: absoluteUrl(localizePath('/blog', 'ru')),
+      },
+    },
+  }
 }
 
 export default function BlogPage() {
-  const posts = getAllPosts()
+  const locale = getLocale()
+  const dict = getDictionary(locale)
+  const posts = getAllPosts({ locale })
 
   return (
     <Blueprint className="pb-14">
       <Container className="pt-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-3">
-            <PixelLabel>SECTION 03 — BLOG</PixelLabel>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Blog</h1>
+            <PixelLabel>{dict.blog.sectionLabel}</PixelLabel>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{dict.blog.title}</h1>
             <p className="max-w-2xl text-sm leading-relaxed text-[rgba(11,15,20,0.72)]">
-              Practical write-ups on ML systems, modeling trade-offs, and performance constraints.
+              {dict.blog.description}
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm">
             <Link href="/rss.xml" className="text-ink hover:underline">
-              RSS
+              {dict.blog.rssLabel}
             </Link>
           </div>
         </div>
 
         <Divider />
 
-        <PostsExplorer posts={posts} />
+        <PostsExplorer posts={posts} locale={locale} dict={dict} />
       </Container>
     </Blueprint>
   )

@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
+import { defaultLocale, getDictionary, normalizeLocale } from '@/lib/i18n'
 
 export const runtime = 'edge'
 
@@ -11,8 +12,10 @@ function clamp(input: string | null, max = 120): string {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const title = clamp(searchParams.get('title'), 80) || 'Portfolio'
-  const subtitle = clamp(searchParams.get('subtitle'), 100) || 'Machine Learning Engineer'
+  const locale = normalizeLocale(searchParams.get('lang') || defaultLocale)
+  const dict = getDictionary(locale)
+  const title = clamp(searchParams.get('title'), 80) || dict.og.defaultTitle
+  const subtitle = clamp(searchParams.get('subtitle'), 100) || dict.og.defaultSubtitle
 
   // Minimal blueprint/editorial vibe: subtle grid + ink accent.
   return new ImageResponse(
@@ -41,7 +44,7 @@ export async function GET(req: NextRequest) {
               color: 'rgba(11,15,20,0.65)',
             }}
           >
-            FIG 001
+            {dict.og.figureLabel}
           </div>
           <div style={{ width: 180, height: 2, background: 'rgba(11,15,20,0.12)' }} />
         </div>
@@ -57,7 +60,7 @@ export async function GET(req: NextRequest) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 14, height: 14, borderRadius: 999, background: '#2F6BFF' }} />
-          <div style={{ fontSize: 18, color: 'rgba(11,15,20,0.70)' }}>ink blue • blueprint notes • production ML</div>
+          <div style={{ fontSize: 18, color: 'rgba(11,15,20,0.70)' }}>{dict.og.footer}</div>
         </div>
       </div>
     ),

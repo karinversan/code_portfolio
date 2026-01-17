@@ -2,14 +2,17 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Chip } from '@/components/ui/Chip'
 import type { Project } from '@/lib/content'
+import type { Locale } from '@/lib/i18n'
+import { localizePath } from '@/lib/i18n'
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({ project, locale }: { project: Project; locale?: Locale }) {
+  const href = locale ? localizePath(`/projects/${project.slug}`, locale) : `/projects/${project.slug}`
   return (
     <Card className="p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <Link
-            href={`/projects/${project.slug}`}
+            href={href}
             className="text-base font-semibold tracking-tight text-text hover:underline"
           >
             {project.title}

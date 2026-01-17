@@ -5,9 +5,15 @@ export type Crumb = {
   label: string
 }
 
-export function Breadcrumbs({ items }: { items: Crumb[] }) {
+export function Breadcrumbs({
+  items,
+  ariaLabel,
+}: {
+  items: Crumb[]
+  ariaLabel: string
+}) {
   return (
-    <nav aria-label="Breadcrumb" className="text-sm">
+    <nav aria-label={ariaLabel} className="text-sm">
       <ol className="flex flex-wrap items-center gap-2 text-[rgba(11,15,20,0.62)]">
         {items.map((item, idx) => {
           const isLast = idx === items.length - 1

@@ -17,25 +17,38 @@ import { JsonLd } from '@/components/JsonLd'
 import { mdxComponents } from '@/components/mdx/MdxComponents'
 import { compileMdx, extractToc } from '@/lib/mdx'
 import { getAllPosts, getPostBySlug, getPostSlugs } from '@/lib/content'
-import { formatDate } from '@/lib/utils'
+import { absoluteUrl, formatDate, formatReadingTime } from '@/lib/utils'
 import { site } from '@/lib/site'
+import { getDictionary, localizePath } from '@/lib/i18n'
+import { getLocale } from '@/lib/i18n.server'
+
+export const dynamic = 'force-dynamic'
 
 export function generateStaticParams() {
-  return getPostSlugs().map((slug) => ({ slug }))
+  return getPostSlugs({ locale: 'en' }).map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = getPostBySlug(params.slug)
+  const locale = getLocale()
+  const post = getPostBySlug(params.slug, { locale })
   if (!post) return {}
 
+  const dict = getDictionary(locale)
   const title = post.frontmatter.title
   const description = post.frontmatter.summary
-  const url = `${site.url}/blog/${post.slug}`
+  const basePath = `/blog/${post.slug}`
+  const url = absoluteUrl(localizePath(basePath, locale))
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      languages: {
+        en: absoluteUrl(localizePath(basePath, 'en')),
+        ru: absoluteUrl(localizePath(basePath, 'ru')),
+      },
+    },
     openGraph: {
       type: 'article',
       title,
@@ -44,7 +57,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       publishedTime: post.frontmatter.date,
       images: [
         {
-          url: `/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent('Blog post')}`,
+          url: `/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(dict.blogPost.ogSubtitle)}&lang=${locale}`,
           width: 1200,
           height: 630,
           alt: title,
@@ -55,21 +68,25 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title,
       description,
-      images: [`/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent('Blog post')}`],
+      images: [
+        `/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(dict.blogPost.ogSubtitle)}&lang=${locale}`,
+      ],
     },
   }
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getPostBySlug(params.slug)
+  const locale = getLocale()
+  const post = getPostBySlug(params.slug, { locale })
   if (!post) notFound()
 
+  const dict = getDictionary(locale)
   const { frontmatter, content, slug } = post
   const toc = extractToc(content)
-  const { content: mdx } = await compileMdx(content, mdxComponents)
-  const rt = readingTime(content).text
+  const { content: mdx } = await compileMdx(content, mdxComponents(dict))
+  const rt = formatReadingTime(readingTime(content).minutes, locale)
 
-  const all = getAllPosts()
+  const all = getAllPosts({ locale })
   const idx = all.findIndex((p) => p.slug === slug)
   const prev = idx >= 0 ? all[idx + 1] : null
   const next = idx >= 0 ? all[idx - 1] : null
@@ -85,6 +102,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     .slice(0, 3)
     .map((x) => x.post)
 
+  const canonicalUrl = absoluteUrl(localizePath(`/blog/${slug}`, locale))
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -99,7 +117,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${site.url}/blog/${slug}`,
+      '@id': canonicalUrl,
     },
     keywords: frontmatter.tags,
   }
@@ -112,24 +130,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       <Container className="pt-10">
         <div className="space-y-4">
           <Breadcrumbs
+            ariaLabel={dict.breadcrumbs.ariaLabel}
             items={[
-              { href: '/', label: 'Home' },
-              { href: '/blog', label: 'Blog' },
-              { href: `/blog/${slug}`, label: frontmatter.title },
+              { href: localizePath('/', locale), label: dict.breadcrumbs.home },
+              { href: localizePath('/blog', locale), label: dict.breadcrumbs.blog },
+              { href: localizePath(`/blog/${slug}`, locale), label: frontmatter.title },
             ]}
           />
 
           <div className="space-y-3">
-            <PixelLabel>ARTICLE</PixelLabel>
+            <PixelLabel>{dict.blogPost.articleLabel}</PixelLabel>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{frontmatter.title}</h1>
             <p className="max-w-3xl text-sm leading-relaxed text-[rgba(11,15,20,0.72)]">{frontmatter.summary}</p>
 
             <div className="flex flex-wrap items-center gap-2 text-xs text-[rgba(11,15,20,0.55)]">
-              <time dateTime={frontmatter.date}>{formatDate(frontmatter.date)}</time>
+              <time dateTime={frontmatter.date}>{formatDate(frontmatter.date, locale)}</time>
               <span aria-hidden>·</span>
               <span>{rt}</span>
               <span aria-hidden>·</span>
-              <Link href="/blog" className="text-ink hover:underline">All posts</Link>
+              <Link href={localizePath('/blog', locale)} className="text-ink hover:underline">{dict.blogPost.allPosts}</Link>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -139,7 +158,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             </div>
           </div>
 
-          <MobileToc items={toc} />
+          <MobileToc items={toc} dict={dict} />
         </div>
 
         <Divider />
@@ -147,7 +166,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         <div className="grid gap-10 lg:grid-cols-[260px_1fr] lg:items-start">
           <aside className="hidden lg:block">
             <div className="sticky top-24">
-              <TableOfContents items={toc} />
+              <TableOfContents items={toc} dict={dict} />
             </div>
           </aside>
 
@@ -158,25 +177,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
             <Divider />
 
-            <nav className="grid gap-4 sm:grid-cols-2" aria-label="Post navigation">
+            <nav className="grid gap-4 sm:grid-cols-2" aria-label={dict.blogPost.postNavigation}>
               <div className="rounded-2xl border border-[rgba(11,15,20,0.10)] bg-white p-5">
-                <PixelLabel className="text-[rgba(11,15,20,0.55)]">PREVIOUS</PixelLabel>
+                <PixelLabel className="text-[rgba(11,15,20,0.55)]">{dict.blogPost.previousLabel}</PixelLabel>
                 {prev ? (
-                  <Link href={`/blog/${prev.slug}`} className="mt-2 block text-sm font-semibold tracking-tight text-text hover:underline">
+                  <Link href={localizePath(`/blog/${prev.slug}`, locale)} className="mt-2 block text-sm font-semibold tracking-tight text-text hover:underline">
                     {prev.title}
                   </Link>
                 ) : (
-                  <p className="mt-2 text-sm text-[rgba(11,15,20,0.60)]">No previous post</p>
+                  <p className="mt-2 text-sm text-[rgba(11,15,20,0.60)]">{dict.blogPost.noPrevious}</p>
                 )}
               </div>
               <div className="rounded-2xl border border-[rgba(11,15,20,0.10)] bg-white p-5">
-                <PixelLabel className="text-[rgba(11,15,20,0.55)]">NEXT</PixelLabel>
+                <PixelLabel className="text-[rgba(11,15,20,0.55)]">{dict.blogPost.nextLabel}</PixelLabel>
                 {next ? (
-                  <Link href={`/blog/${next.slug}`} className="mt-2 block text-sm font-semibold tracking-tight text-text hover:underline">
+                  <Link href={localizePath(`/blog/${next.slug}`, locale)} className="mt-2 block text-sm font-semibold tracking-tight text-text hover:underline">
                     {next.title}
                   </Link>
                 ) : (
-                  <p className="mt-2 text-sm text-[rgba(11,15,20,0.60)]">No next post</p>
+                  <p className="mt-2 text-sm text-[rgba(11,15,20,0.60)]">{dict.blogPost.noNext}</p>
                 )}
               </div>
             </nav>
@@ -186,12 +205,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <Divider />
                 <section aria-labelledby="related-posts" className="space-y-5">
                   <div className="space-y-2">
-                    <PixelLabel>RELATED</PixelLabel>
-                    <h2 id="related-posts" className="text-xl font-semibold tracking-tight">Related posts</h2>
+                    <PixelLabel>{dict.blogPost.relatedLabel}</PixelLabel>
+                    <h2 id="related-posts" className="text-xl font-semibold tracking-tight">{dict.blogPost.relatedTitle}</h2>
                   </div>
                   <div className="grid gap-4">
                     {related.map((p) => (
-                      <PostCard key={p.slug} post={p} />
+                      <PostCard key={p.slug} post={p} locale={locale} />
                     ))}
                   </div>
                 </section>

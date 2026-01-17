@@ -5,14 +5,16 @@ import { useReducedMotion } from 'framer-motion'
 import type { TocItem } from '@/lib/mdx'
 import { cn } from '@/lib/utils'
 import { PixelLabel } from '@/components/ui/PixelLabel'
+import type { Dictionary } from '@/lib/i18n'
 
 type Props = {
   items: TocItem[]
   className?: string
   onNavigate?: () => void
+  dict: Dictionary
 }
 
-export function TableOfContents({ items, className, onNavigate }: Props) {
+export function TableOfContents({ items, className, onNavigate, dict }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const reduce = useReducedMotion()
 
@@ -52,9 +54,9 @@ export function TableOfContents({ items, className, onNavigate }: Props) {
   return (
     <div className={cn('space-y-3', className)}>
       <div className="flex items-center justify-between">
-        <PixelLabel>CONTENTS</PixelLabel>
+        <PixelLabel>{dict.toc.contents}</PixelLabel>
         {activeId ? (
-          <PixelLabel className="text-[rgba(11,15,20,0.55)]">CURRENT</PixelLabel>
+          <PixelLabel className="text-[rgba(11,15,20,0.55)]">{dict.toc.current}</PixelLabel>
         ) : null}
       </div>
       <ul className="space-y-1 text-sm">

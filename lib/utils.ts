@@ -1,16 +1,26 @@
 import { site } from '@/lib/site'
+import type { Locale } from '@/lib/i18n'
 
 export function cn(...values: Array<string | undefined | null | false>) {
   return values.filter(Boolean).join(' ')
 }
 
-export function formatDate(iso: string) {
+export function formatDate(iso: string, locale: Locale = 'en') {
   const date = new Date(iso)
-  return date.toLocaleDateString('en-US', {
+  const language = locale === 'ru' ? 'ru-RU' : 'en-US'
+  return date.toLocaleDateString(language, {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
   })
+}
+
+export function formatReadingTime(minutes: number, locale: Locale = 'en') {
+  const rounded = Math.max(1, Math.round(minutes))
+  if (locale === 'ru') {
+    return `${rounded} мин чтения`
+  }
+  return `${rounded} min read`
 }
 
 export function absoluteUrl(pathname: string) {

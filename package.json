@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "analyze": "ANALYZE=true next build",
     "postbuild": "next-sitemap && node scripts/generate-rss.mjs",
+    "gen:ru-drafts": "node scripts/generate-ru-drafts.mjs",
     "prepare": "husky install",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"

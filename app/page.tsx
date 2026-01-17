@@ -12,43 +12,22 @@ import { Chip } from '@/components/ui/Chip'
 import { Card } from '@/components/ui/Card'
 import { getAllPosts, getAllProjects } from '@/lib/content'
 import { marketing, site } from '@/lib/site'
+import { getDictionary, localizePath } from '@/lib/i18n'
+import { getLocale } from '@/lib/i18n.server'
+
+export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
-  const projects = getAllProjects()
+  const locale = getLocale()
+  const dict = getDictionary(locale)
+  const projects = getAllProjects({ locale })
   const featured = projects.filter((p) => p.featured).slice(0, 6)
 
-  const posts = getAllPosts()
+  const posts = getAllPosts({ locale })
   const latestPosts = posts.slice(0, 5)
 
-  const skills = {
-    ML: ['PyTorch', 'Transformers', 'Evaluation', 'Experiment tracking'],
-    MLOps: ['Docker', 'Kubernetes', 'CI/CD', 'Monitoring'],
-    Data: ['SQL', 'Spark', 'Feature stores', 'Data quality'],
-    Backend: ['TypeScript', 'Python', 'FastAPI', 'Postgres'],
-  } as const
-
-  const process = [
-    {
-      label: '01 — Brief',
-      title: 'Define the success metric',
-      body: 'Clarify constraints (latency, cost, risk) and create an evaluation plan that matches the real user journey.',
-    },
-    {
-      label: '02 — Modeling',
-      title: 'Build the simplest reliable baseline',
-      body: 'Start with strong baselines and clean data contracts; iterate only where the metric is sensitive.',
-    },
-    {
-      label: '03 — Iteration',
-      title: 'Ship improvements with guardrails',
-      body: 'A/B tests, offline/online parity checks, and monitoring to catch drift and regressions.',
-    },
-    {
-      label: '04 — Delivery',
-      title: 'Productionize and document',
-      body: 'Make it maintainable: observability, runbooks, dashboards, and a clear ownership story.',
-    },
-  ]
+  const skills = dict.home.skills
+  const process = dict.home.process
 
   return (
     <Blueprint className="pb-14">
@@ -57,36 +36,41 @@ export default function HomePage() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-2">
-                <PixelLabel>SECTION 01 — OVERVIEW</PixelLabel>
+                <PixelLabel>{dict.home.sectionOverview}</PixelLabel>
                 <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                   {site.name}
                   <span className="text-[rgba(11,15,20,0.55)]"> · </span>
-                  <span className="text-ink">{site.title}</span>
+                  <span className="text-ink">{dict.site.title}</span>
                 </h1>
               </div>
               <div className="flex flex-wrap gap-3">
-                <ButtonLink href={marketing.ctas.projects}>View Projects</ButtonLink>
-                <ButtonLink href={marketing.ctas.blog} variant="secondary">
-                  Read Blog
+                <ButtonLink href={localizePath(marketing.ctas.projects, locale)}>{dict.buttons.viewProjects}</ButtonLink>
+                <ButtonLink href={localizePath(marketing.ctas.blog, locale)} variant="secondary">
+                  {dict.buttons.readBlog}
                 </ButtonLink>
                 <ButtonLink href={marketing.ctas.contact} variant="secondary">
-                  Contact
+                  {dict.buttons.contact}
                 </ButtonLink>
                 <ButtonLink href={marketing.ctas.cv} variant="secondary">
-                  Download CV
+                  {dict.buttons.downloadCv}
                 </ButtonLink>
               </div>
             </div>
 
             <p className="max-w-2xl text-base leading-relaxed text-[rgba(11,15,20,0.75)]">
-              {marketing.heroLine}
+              {dict.home.heroLine}
             </p>
 
             <div className="flex flex-wrap gap-2">
-              <Chip tone="ink" className="bg-ink/10">Production ML</Chip>
-              <Chip>Offline + online evaluation</Chip>
-              <Chip>Fast inference</Chip>
-              <Chip>Observability</Chip>
+              {dict.home.chips.map((chip, idx) => (
+                <Chip
+                  key={chip}
+                  tone={idx === 0 ? 'ink' : 'neutral'}
+                  className={idx === 0 ? 'bg-ink/10' : undefined}
+                >
+                  {chip}
+                </Chip>
+              ))}
             </div>
           </div>
         </Reveal>
@@ -97,25 +81,25 @@ export default function HomePage() {
           <section aria-labelledby="featured-projects" className="space-y-6">
             <div className="flex items-end justify-between gap-4">
               <div className="space-y-2">
-                <PixelLabel>SECTION 02</PixelLabel>
+                <PixelLabel>{dict.home.sectionFeatured}</PixelLabel>
                 <h2 id="featured-projects" className="text-xl font-semibold tracking-tight">
-                  Featured Projects
+                  {dict.home.featuredTitle}
                 </h2>
               </div>
-              <Link href="/projects" className="text-sm text-ink hover:underline">
-                View all
+              <Link href={localizePath('/projects', locale)} className="text-sm text-ink hover:underline">
+                {dict.home.viewAll}
               </Link>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               {featured.map((p) => (
-                <ProjectCard key={p.slug} project={p} />
+                <ProjectCard key={p.slug} project={p} locale={locale} />
               ))}
             </div>
 
             {featured.length === 0 ? (
               <p className="text-sm text-[rgba(11,15,20,0.65)]">
-                Add projects in <code className="font-mono">/content/projects</code>.
+                {dict.home.addProjectsHint} <code className="font-mono">/content/projects</code>.
               </p>
             ) : null}
           </section>
@@ -127,19 +111,19 @@ export default function HomePage() {
           <section aria-labelledby="latest-articles" className="space-y-6">
             <div className="flex items-end justify-between gap-4">
               <div className="space-y-2">
-                <PixelLabel>SECTION 03</PixelLabel>
+                <PixelLabel>{dict.home.sectionArticles}</PixelLabel>
                 <h2 id="latest-articles" className="text-xl font-semibold tracking-tight">
-                  Latest Articles
+                  {dict.home.latestTitle}
                 </h2>
               </div>
-              <Link href="/blog" className="text-sm text-ink hover:underline">
-                View all
+              <Link href={localizePath('/blog', locale)} className="text-sm text-ink hover:underline">
+                {dict.home.viewAll}
               </Link>
             </div>
 
             <div className="grid gap-4">
               {latestPosts.map((p) => (
-                <PostCard key={p.slug} post={p} />
+                <PostCard key={p.slug} post={p} locale={locale} />
               ))}
             </div>
           </section>
@@ -150,9 +134,9 @@ export default function HomePage() {
         <Reveal delay={0.1}>
           <section aria-labelledby="skills" className="space-y-6">
             <div className="space-y-2">
-              <PixelLabel>SECTION 04</PixelLabel>
+              <PixelLabel>{dict.home.sectionSkills}</PixelLabel>
               <h2 id="skills" className="text-xl font-semibold tracking-tight">
-                Skills / Stack
+                {dict.home.skillsTitle}
               </h2>
             </div>
 
@@ -161,7 +145,7 @@ export default function HomePage() {
                 <Card key={group} className="p-5" hover={false}>
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold tracking-tight">{group}</p>
-                    <PixelLabel className="text-[rgba(11,15,20,0.55)]">KIT</PixelLabel>
+                    <PixelLabel className="text-[rgba(11,15,20,0.55)]">{dict.home.kitLabel}</PixelLabel>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {items.map((s) => (
@@ -179,9 +163,9 @@ export default function HomePage() {
         <Reveal delay={0.12}>
           <section aria-labelledby="process" className="space-y-6">
             <div className="space-y-2">
-              <PixelLabel>PROCESS</PixelLabel>
+              <PixelLabel>{dict.home.sectionProcess}</PixelLabel>
               <h2 id="process" className="text-xl font-semibold tracking-tight">
-                How I work
+                {dict.home.processTitle}
               </h2>
             </div>
 
@@ -205,27 +189,25 @@ export default function HomePage() {
         <Reveal delay={0.14}>
           <section aria-labelledby="about" className="space-y-6">
             <div className="space-y-2">
-              <PixelLabel>SECTION 06</PixelLabel>
+              <PixelLabel>{dict.home.sectionAbout}</PixelLabel>
               <h2 id="about" className="text-xl font-semibold tracking-tight">
-                About
+                {dict.home.aboutTitle}
               </h2>
             </div>
 
             <Card className="p-6" hover={false}>
               <p className="max-w-3xl text-sm leading-relaxed text-[rgba(11,15,20,0.75)]">
-                I focus on ML that holds up in production: strong baselines, clean evaluation, and a deployment story that
-                survives real traffic. I like problems where the outcome is measurable — quality, latency, cost, and the
-                human experience of the product.
+                {dict.home.aboutBody}
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Link href="/about" className="text-sm text-ink hover:underline">
-                  More about me
+                <Link href={localizePath('/about', locale)} className="text-sm text-ink hover:underline">
+                  {dict.home.aboutLink}
                 </Link>
                 <span className="text-sm text-[rgba(11,15,20,0.35)]" aria-hidden>
                   ·
                 </span>
-                <Link href="/projects" className="text-sm text-ink hover:underline">
-                  Case studies
+                <Link href={localizePath('/projects', locale)} className="text-sm text-ink hover:underline">
+                  {dict.home.caseStudiesLink}
                 </Link>
               </div>
             </Card>
@@ -237,29 +219,29 @@ export default function HomePage() {
         <Reveal delay={0.16}>
           <section id="contact" aria-labelledby="contact-heading" className="space-y-6">
             <div className="space-y-2">
-              <PixelLabel>SECTION 07</PixelLabel>
+              <PixelLabel>{dict.home.sectionContact}</PixelLabel>
               <h2 id="contact-heading" className="text-xl font-semibold tracking-tight">
-                Contact
+                {dict.home.contactTitle}
               </h2>
             </div>
 
             <Card className="p-6" hover={false}>
               <p className="text-sm leading-relaxed text-[rgba(11,15,20,0.70)]">
-                Want to collaborate, hire, or chat ML systems? Email is best.
+                {dict.home.contactBody}
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <ButtonLink href={`mailto:${site.email}`}>
-                  Email me
+                  {dict.home.contactEmail}
                 </ButtonLink>
                 <ButtonLink href={site.links.linkedin} variant="secondary">
-                  LinkedIn
+                  {dict.home.contactLinkedIn}
                 </ButtonLink>
                 <ButtonLink href={site.links.github} variant="secondary">
-                  GitHub
+                  {dict.home.contactGitHub}
                 </ButtonLink>
               </div>
               <p className="mt-4 text-xs text-[rgba(11,15,20,0.55)]">
-                Prefer a quick intro? Include context, constraints, and what success looks like.
+                {dict.home.contactHint}
               </p>
             </Card>
           </section>

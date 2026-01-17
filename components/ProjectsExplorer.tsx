@@ -5,8 +5,17 @@ import type { Project } from '@/lib/content'
 import { ProjectCard } from '@/components/ProjectCard'
 import { Chip } from '@/components/ui/Chip'
 import { PixelLabel } from '@/components/ui/PixelLabel'
+import type { Dictionary, Locale } from '@/lib/i18n'
 
-export function ProjectsExplorer({ projects }: { projects: Project[] }) {
+export function ProjectsExplorer({
+  projects,
+  dict,
+  locale,
+}: {
+  projects: Project[]
+  dict: Dictionary
+  locale: Locale
+}) {
   const [query, setQuery] = useState('')
   const [tag, setTag] = useState<string | null>(null)
 
@@ -32,16 +41,16 @@ export function ProjectsExplorer({ projects }: { projects: Project[] }) {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 md:items-end">
         <div className="space-y-2">
-          <PixelLabel>SEARCH</PixelLabel>
+          <PixelLabel>{dict.projectsExplorer.searchLabel}</PixelLabel>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search title or summary…"
+            placeholder={dict.projectsExplorer.searchPlaceholder}
             className="w-full rounded-xl border border-[rgba(11,15,20,0.14)] bg-white px-3 py-2 text-sm text-text placeholder:text-[rgba(11,15,20,0.45)] focus:outline-none focus:ring-2 focus:ring-ink/35"
           />
         </div>
         <div className="space-y-2">
-          <PixelLabel>FILTER</PixelLabel>
+          <PixelLabel>{dict.projectsExplorer.filterLabel}</PixelLabel>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -49,7 +58,7 @@ export function ProjectsExplorer({ projects }: { projects: Project[] }) {
               className="focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40"
             >
               <Chip tone={tag === null ? 'ink' : 'neutral'} className={tag === null ? 'bg-ink/10' : ''}>
-                All
+                {dict.projectsExplorer.all}
               </Chip>
             </button>
             {tags.map((t) => (
@@ -70,12 +79,12 @@ export function ProjectsExplorer({ projects }: { projects: Project[] }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         {results.map((p) => (
-          <ProjectCard key={p.slug} project={p} />
+          <ProjectCard key={p.slug} project={p} locale={locale} />
         ))}
       </div>
 
       {results.length === 0 ? (
-        <p className="text-sm text-[rgba(11,15,20,0.65)]">No projects match your filters.</p>
+        <p className="text-sm text-[rgba(11,15,20,0.65)]">{dict.projectsExplorer.empty}</p>
       ) : null}
     </div>
   )

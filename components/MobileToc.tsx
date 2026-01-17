@@ -5,8 +5,9 @@ import { useState } from 'react'
 import type { TocItem } from '@/lib/mdx'
 import { TableOfContents } from '@/components/TableOfContents'
 import { PixelLabel } from '@/components/ui/PixelLabel'
+import type { Dictionary } from '@/lib/i18n'
 
-export function MobileToc({ items }: { items: TocItem[] }) {
+export function MobileToc({ items, dict }: { items: TocItem[]; dict: Dictionary }) {
   const [open, setOpen] = useState(false)
 
   if (items.length === 0) return null
@@ -20,8 +21,8 @@ export function MobileToc({ items }: { items: TocItem[] }) {
         aria-expanded={open}
       >
         <div className="flex items-center gap-3">
-          <PixelLabel>CONTENTS</PixelLabel>
-          <span className="text-sm text-[rgba(11,15,20,0.70)]">Jump to section</span>
+          <PixelLabel>{dict.toc.contents}</PixelLabel>
+          <span className="text-sm text-[rgba(11,15,20,0.70)]">{dict.toc.jumpToSection}</span>
         </div>
         <span aria-hidden className="text-[rgba(11,15,20,0.55)]">{open ? '–' : '+'}</span>
       </button>
@@ -31,6 +32,7 @@ export function MobileToc({ items }: { items: TocItem[] }) {
           <TableOfContents
             items={items}
             onNavigate={() => setOpen(false)}
+            dict={dict}
           />
         </div>
       ) : null}
